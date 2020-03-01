@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Server {
 
-    private static int port = 1000;
+    private static int port = 10000;
 
     static ArrayList<ClientHandler> handlers = new ArrayList<>();
 
