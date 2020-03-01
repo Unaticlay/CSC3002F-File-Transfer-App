@@ -8,6 +8,8 @@ public class ClientHandler extends Thread{
         private Socket client;
         private final DataInputStream input;
         private final DataOutputStream output;
+        String dest = "C:\\Users\\Laaiqah\\Desktop\\CSC3 NETWORKS\\+Server\\";
+
 
         private static String filePath = "list.txt";
 
@@ -76,20 +78,57 @@ public class ClientHandler extends Thread{
             }
         }
 
-        void receiveFile()
+         void receiveFile()
         {
-            ;
+             int bytesRead;   
+             
+               try{
+                   DataInputStream in = new DataInputStream(client.getInputStream());
+                   String file = in.readUTF();
+                   byte[] bytes = new byte[16384];
+                  
+                   System.out.println("Writing file to server......");
+                  
+                   FileOutputStream fileOut = new FileOutputStream(dest+file);
+                   DataOutputStream output = new DataOutputStream(fileOut);                  
+                   bytesRead = in.read(bytes, 0, bytes.length);
+                   output.write(bytes, 0, bytesRead); 
+                   
+                   System.out.println("File succesfully recieved.");
+                   output.close();
+                   
+                 } catch(IOException e) {
+                     e.printStackTrace();
+                 }
         }
+
 
         void sendList()
         {
             ;
         }
 
-        void sendFile()
+         void sendFile(String fileName)
         {
+          File file = new File(fileName);
+          byte[] bytes = new byte[16384];
+           try {
+             DataInputStream in = new DataInputStream(new FileInputStream(file));
+             try{
+                in.read(bytes, 0, bytes.length);                
+                output.write(bytes, 0, bytes.length);
+                System.out.println("File successfully sent.");
+                output.flush();
+              } catch(IOException e) {
+                e.printStackTrace();
+              }
+          } catch (FileNotFoundException e) {
+              System.out.println(e);
+          }
+                
             ;
         }
+
 
         void loadFileList() throws IOException
         {
