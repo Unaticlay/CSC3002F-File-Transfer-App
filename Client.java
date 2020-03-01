@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class Client {
 
-    private static int port = 1000;
+    private static int port = 10000;
 
     static Socket client;
 
