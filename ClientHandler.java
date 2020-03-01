@@ -140,4 +140,26 @@ public class ClientHandler extends Thread{
 
             return false;
         }
+
+        void addFile(String fileName, String access) throws IOException
+        {
+            FileInfo file = new FileInfo(fileName, access);
+            fileList.add(file);
+            saveList(file);
+        }
+
+        void addFile(String fileName, String access, String key) throws IOException
+        {
+            FileInfo file = new FileInfo(fileName, access, key);
+            fileList.add(file);
+            saveList(file);
+        }
+
+        void saveList(FileInfo file) throws IOException
+        {
+            PrintWriter writer = new PrintWriter(new FileWriter(filePath), true);
+            writer.write(file.toString());
+
+            writer.close();
+        }
 }
