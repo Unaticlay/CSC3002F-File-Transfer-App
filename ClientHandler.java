@@ -8,6 +8,8 @@ public class ClientHandler extends Thread{
         private Socket client;
         private final DataInputStream input;
         private final DataOutputStream output;
+        String dest = "C:\\Users\\Laaiqah\\Desktop\\CSC3 NETWORKS\\+Server\\";
+
 
         private static String filePath = "list.txt";
 
@@ -76,20 +78,68 @@ public class ClientHandler extends Thread{
             }
         }
 
-        void receiveFile()
+         void receiveFile()
         {
-            ;
+             int bytesRead;   
+               try{
+                   DataInputStream in = new DataInputStream(client.getInputStream());
+                   String file = in.readUTF();
+                   byte[] bytes = new byte[16384];
+                   System.out.println("Writing file to server......");
+                  
+                   OutputStream output = new FileOutputStream(dest+file);     
+                   long size = in.readLong();     
+                   byte[] buffer = new byte[(int)file.length()];     
+                   while (size > 0 && (bytesRead = in.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {     
+                       output.write(buffer, 0, bytesRead);     
+                       size -= bytesRead;     
+                   }  
+                  System.out.println("File recieved.");
+                  in.close();
+                  output.close(); 
+
+                 } catch(IOException e) {
+                     e.printStackTrace();
+                 }
         }
+
 
         void sendList()
         {
             ;
         }
 
-        void sendFile()
+         void sendFile(String fileName)
         {
+          File file = new File(fileName);
+          byte[] bytes = new byte[(int)file.length()];
+          int bytesRead;
+           try {
+             DataInputStream in = new DataInputStream(new FileInputStream(file));
+             try{
+               in.readFully(bytes, 0, bytes.length);                
+               OutputStream clientStream = client.getOutputStream();
+               DataOutputStream output = new DataOutputStream(clientStream);
+             
+               output.writeUTF(file.getName());
+               output.writeLong(bytes.length);
+               output.write(bytes,0,bytes.length);
+                       
+               System.out.println("File successfully sent to client.");
+               output.flush();
+               System.out.println("Transfer Complete");
+               clientStream.close();
+              
+               client.close();
+              
+             } catch(Exception e){
+                  e.printStackTrace();
+              }} catch (FileNotFoundException e) {
+              System.out.println(e);
+          }                
             ;
         }
+
 
         void loadFileList() throws IOException
         {
