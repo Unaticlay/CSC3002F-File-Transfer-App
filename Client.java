@@ -67,7 +67,6 @@ public class Client {
  static void upload(String fileName){
          File file = new File(fileName);
          byte[] bytes = new byte[(int) file.length()];
-           
          try{
             FileInputStream filein = new FileInputStream(file);
             DataInputStream input = new DataInputStream(filein);          
@@ -76,53 +75,46 @@ public class Client {
                OutputStream clientStream = client.getOutputStream();
                DataOutputStream output = new DataOutputStream(clientStream);
                
-               //    send file name and size
                output.writeUTF(file.getName());
                output.writeLong(bytes.length);
                output.write(bytes, 0, bytes.length);
-               output.flush();
-               
-               // Send file data
-               clientStream.write(bytes, 0, bytes.length);
-               clientStream.flush();
-                 
+     
                System.out.println("File successfully uploaded onto server.");
                output.flush();
-                
-               //Closing socket
                clientStream.close();
-               client.close();
                System.out.println("Transfer Complete");
+               client.close();
+               
              } catch(IOException e) {
                 e.printStackTrace();
                }
           } catch (FileNotFoundException e) {
-          
               System.out.println(e);
           }
     }
 
 
-       static void download(String fileName)
-    {
+       static void download(String fileName){
       try{
-         DataInputStream in = new DataInputStream(client.getInputStream());
-         byte[] bytes = new byte[16384];
-   
-         String file  = fileName;
-         FileOutputStream fileOut = new FileOutputStream(dest+file);
-         DataOutputStream output = new DataOutputStream(fileOut);
-                   
-         int bytesRead = in.read(bytes, 0, bytes.length);
-         output.write(bytes, 0, bytesRead); 
-         System.out.println("File successfully recieved.");
-   
-         output.close();
-         //client.close();
+         DataInputStream in = new DataInputStream(client.getInputStream());         
+          int bytesRead;
+          String file  = fileName;
+          OutputStream output = new FileOutputStream(dest+file);     
+          long size = in.readLong();     
+          byte[] buffer = new byte[(int)file.length()];     
+          // while (size > 0 && (bytesRead = in.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1)     
+          while ((bytesRead = in.read(buffer, 0, (int)Math.min(buffer.length, size))) >0){     
+               output.write(buffer, 0, bytesRead);     
+               size -= bytesRead;     
+           }  
+         System.out.println("Download successful.");                         
+         output.close();         
         } catch(IOException e) {
-          e.printStackTrace();
-        };
-    }    static void getList()
+            e.printStackTrace();
+        };    
+    }    
+    
+    static void getList()
     {
         ;
     }

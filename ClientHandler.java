@@ -81,22 +81,23 @@ public class ClientHandler extends Thread{
          void receiveFile()
         {
              int bytesRead;   
-             
                try{
                    DataInputStream in = new DataInputStream(client.getInputStream());
                    String file = in.readUTF();
                    byte[] bytes = new byte[16384];
-                  
                    System.out.println("Writing file to server......");
                   
-                   FileOutputStream fileOut = new FileOutputStream(dest+file);
-                   DataOutputStream output = new DataOutputStream(fileOut);                  
-                   bytesRead = in.read(bytes, 0, bytes.length);
-                   output.write(bytes, 0, bytesRead); 
-                   
-                   System.out.println("File succesfully recieved.");
-                   output.close();
-                   
+                   OutputStream output = new FileOutputStream(dest+file);     
+                   long size = in.readLong();     
+                   byte[] buffer = new byte[(int)file.length()];     
+                   while (size > 0 && (bytesRead = in.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {     
+                       output.write(buffer, 0, bytesRead);     
+                       size -= bytesRead;     
+                   }  
+                  System.out.println("File recieved.");
+                  in.close();
+                  output.close(); 
+
                  } catch(IOException e) {
                      e.printStackTrace();
                  }
@@ -111,21 +112,31 @@ public class ClientHandler extends Thread{
          void sendFile(String fileName)
         {
           File file = new File(fileName);
-          byte[] bytes = new byte[16384];
+          byte[] bytes = new byte[(int)file.length()];
+          int bytesRead;
            try {
              DataInputStream in = new DataInputStream(new FileInputStream(file));
              try{
-                in.read(bytes, 0, bytes.length);                
-                output.write(bytes, 0, bytes.length);
-                System.out.println("File successfully sent.");
-                output.flush();
-              } catch(IOException e) {
-                e.printStackTrace();
-              }
-          } catch (FileNotFoundException e) {
+               in.readFully(bytes, 0, bytes.length);                
+               OutputStream clientStream = client.getOutputStream();
+               DataOutputStream output = new DataOutputStream(clientStream);
+             
+               output.writeUTF(file.getName());
+               output.writeLong(bytes.length);
+               output.write(bytes,0,bytes.length);
+                       
+               System.out.println("File successfully sent to client.");
+               output.flush();
+               System.out.println("Transfer Complete");
+               clientStream.close();
+              
+               client.close();
+              
+             } catch(Exception e){
+                  e.printStackTrace();
+              }} catch (FileNotFoundException e) {
               System.out.println(e);
-          }
-                
+          }                
             ;
         }
 
