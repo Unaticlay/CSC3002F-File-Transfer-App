@@ -8,11 +8,15 @@ public class ClientHandler extends Thread
 
     private boolean checkValid;
     private Socket client;
+    static String dest = "C:\\Users\\Laaiqah\\Desktop\\CSC3 NETWORKS\\Server\\";
+    static final int BUFFER_SIZE = 65536;
+
 
 
     // BufferedReader and PrintWriter creations
     private final BufferedReader input;
     private final PrintWriter output;
+    
 
     private static String filePath = "list.txt";
 
@@ -71,6 +75,7 @@ public class ClientHandler extends Thread
             {
                 // Here is where the sequences gonna happen
                 String request = input.readLine();
+                
 
                 if (request.startsWith("exit"))
                 {
@@ -84,8 +89,9 @@ public class ClientHandler extends Thread
                 }
                 else if (request.startsWith("download"))
                 {
+                  String fileName = "";
                     // Still need to implement a FileExists check
-                    sendFile();
+                    sendFile(fileName);
                     checkValid = true;
                 }
                 else if (request.startsWith("getlist"))
@@ -119,7 +125,30 @@ public class ClientHandler extends Thread
 
     void receiveFile()
     {
-        ;
+          int bytesRead;
+          System.out.println("Writing file to server......");
+         
+         try{
+              DataInputStream in = new DataInputStream(client.getInputStream());   
+              String file = in.readUTF();                  
+               
+              OutputStream output = new FileOutputStream(dest+file);     
+              long size = in.readLong();     
+              byte[] buffer = new byte[16384];     
+              while (size > 0 && (bytesRead = in.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1)     
+              {     
+               output.write(buffer, 0, bytesRead);     
+               size -= bytesRead;     
+              }  
+              
+              
+            System.out.println("File recieved.");
+            in.close();
+            output.close();      
+          } catch (IOException ie) { 
+                       ie.printStackTrace(); 
+                     }       
+                    
     }
 
     void sendList()
@@ -127,9 +156,44 @@ public class ClientHandler extends Thread
         ;
     }
 
-    void sendFile()
+    void sendFile(String fileName)
     {
-        ;
+               File file = new File(fileName);
+
+               byte[] bytes = new byte[16384];
+               int bytesRead;
+               try{
+                  FileInputStream filein = new FileInputStream(file);
+                  DataInputStream input = new DataInputStream(filein);          
+                   
+                  try{  
+                  input.readFully(bytes, 0, bytes.length);
+                  OutputStream clientStream = client.getOutputStream();
+                  DataOutputStream output = new DataOutputStream(clientStream);
+         
+                  byte[] buffer = new byte[BUFFER_SIZE];
+                  int read;
+                  int totalRead = 0;
+                  long size = input.readLong();
+                  System.out.println("Reading to client.");
+   
+                       while ((read = input.read(buffer)) != -1) {
+                           totalRead += read;
+                           output.write(buffer, 0, read);
+                       }
+                                     
+                   System.out.println("File successfully sent to client.");
+                   output.flush();
+                   System.out.println("Transfer Complete");
+                   clientStream.close();
+                 
+                   client.close();
+                   }catch(IOException e) {
+                      e.printStackTrace();
+                  }
+                     }catch (FileNotFoundException ex){
+            System.out.println(ex);
+    }
     }
 
     void loadFileList() throws IOException

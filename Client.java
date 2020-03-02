@@ -8,6 +8,8 @@ public class Client
     private static int port = 10000;
 
     static Socket client;
+    static String dest = "C:\\Users\\Laaiqah\\Desktop\\CSC3 NETWORKS\\Client\\";
+
 
     private static boolean checkValid = false;
     private static boolean accessCheck = false;
@@ -131,13 +133,76 @@ public class Client
     // File name and access protocol (public or private) is being passed in here
     static void upload(String fileName, String access)
     {
-        ;
+         File file = new File(fileName);
+         byte[] bytes = new byte[16384];          
+         try{
+               FileInputStream filein = new FileInputStream(file);
+               DataInputStream input = new DataInputStream(filein);          
+               try{  
+                     input.readFully(bytes, 0, bytes.length);
+                     OutputStream clientStream = client.getOutputStream();
+                     DataOutputStream output = new DataOutputStream(clientStream);
+                           
+                /*           byte[] buffer = new byte[BUFFER_SIZE];
+                           int read;
+                           int totalRead = 0;
+                           long size = input.readLong();
+                           System.out.println("Reading to server.");
+            
+                                while ((read = input.read(buffer)) != -1) {
+                                    totalRead += read;
+                                    output.write(buffer, 0, read);
+                                }
+                                              
+                            System.out.println("File successfully sent to server.");
+                            output.flush();
+                            System.out.println("Transfer Complete");
+                            clientStream.close();
+                          
+                            client.close();
+            */
+                     output.writeUTF(file.getName());
+                     output.writeLong(bytes.length);
+                     output.write(bytes, 0, bytes.length);
+                     
+                     System.out.println("File successfully uploaded onto server.");
+                     output.flush();
+                     System.out.println("Transfer Complete");
+            
+                     clientStream.close();
+                     client.close();
+                 }catch(IOException e) {
+                      e.printStackTrace();
+                  }
+            }catch (FileNotFoundException ex)  
+    {
+            System.out.println(ex);
+    }
     }
 
     // File name is being passed in here
     static void download(String fileName)
     {
-        ;
+        int bytesRead;
+        try{
+           DataInputStream in = new DataInputStream(client.getInputStream());   
+           String file = fileName;     
+           OutputStream output = new FileOutputStream(dest+file);     
+           long size = in.readLong();     
+           byte[] buffer = new byte[16384]; 
+           System.out.println("Downloading");
+          
+           while (size > 0 && (bytesRead = in.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1)     
+          //  while ((bytesRead = in.read(buffer, 0, (int)Math.min(buffer.length, size))) >0)     
+           {     
+               output.write(buffer, 0, bytesRead);     
+               size -= bytesRead;     
+           }  
+           
+           System.out.println("Download successful.");
+         } catch (IOException ie) { 
+                       ie.printStackTrace(); 
+                     }
     }
 
     static void getList()
