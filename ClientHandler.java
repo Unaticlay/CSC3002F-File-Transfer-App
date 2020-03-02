@@ -5,7 +5,7 @@ import java.util.StringTokenizer;
 
 public class ClientHandler extends Thread {
 
-    private boolean check;
+    private boolean checkValid;
     private Socket client;
     /*
      * private final DataInputStream input; private final DataOutputStream output;
@@ -61,23 +61,23 @@ public class ClientHandler extends Thread {
      */
 
     public void run() {
-        check = true;
-        while (check) {
+        checkValid = false;
+        while (!checkValid) {
             // Here is where the sequences gonna happen
             String request = input.readLine();
 
-            if (request.startsWith("EXIT") || request.startsWith("exit")) {
+            if (request.startsWith("exit")) {
                 handleExit();
-                check = false;
-            } else if (request.startsWith("POST") || request.startsWith("post")) {
+                checkValid = true;
+            } else if (request.startsWith("upload")) {
                 receiveFile();
-                check = false;
-            } else if (request.startsWith("GET") || request.startsWith("get")) {
+                checkValid = true;
+            } else if (request.startsWith("download")) { // Still need to implement a FileExists check
                 sendFile();
-                check = false;
-            } else if (request.startsWith("LIST") || request.startsWith("list")) {
+                checkValid = true;
+            } else if (request.startsWith("getlist")) {
                 sendList();
-                check = false;
+                checkValid = true;
             } else {
                 handleBadRequest();
             }
@@ -170,6 +170,6 @@ public class ClientHandler extends Thread {
     }
 
     void handleBadRequest() {
-        System.out.print("Please enter a valid request (exit, get, send, list)");
+        System.out.print("Please enter a valid request \n Either 'Upload', 'Download', or 'GetList':");
     }
 }

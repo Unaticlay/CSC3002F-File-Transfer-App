@@ -7,8 +7,8 @@ public class Client {
 
     static Socket client;
 
-    private static boolean check = true;
-    private static boolean accessProtocolCheck = true;
+    private static boolean checkValid = false;
+    private static boolean accessCheck = false;
 
     public static void main(String[] args) {
         try {
@@ -17,46 +17,66 @@ public class Client {
             client = new Socket(host.getHostAddress(), port);
 
             // BufferReader and PrintWriter for input and output streams
-
             BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream()));
             PrintWriter output = new PrintWriter(client.getOutputStream());
 
-            System.out.println("Please specify what you would like to do");
-            System.out.println(" 'Upload', 'Download', or 'GetList'");
-            check = true;
+            System.out.println("Please specify what you would like to do:");
+            System.out.println(" Upload', 'Download', or 'GetList'");
+            checkValid = false;
 
-            while (check) {
+            // Checks if the request is a valid request
+            while (!checkValid) {
 
-                String request = input.readLine();
+                String request = input.readLine().toLowerCase();
                 String fileName = null;
-                String accessProtocol = null;
+                String access = null;
+                boolean fileExists = false;
 
-                if (request.toLowerCase().equals("upload")) {
+                // Handles the uploading of a file and catches FileNotFoundException
+                if (request.equals("upload")) {
                     System.out.println("Please enter the name of the file you want to upload:");
-                    fileName = input.readLine();
-                    System.out.println(
-                            "Please specify the privacy setting for the file you want to upload ('public' or 'private'):");
-                    while (accessProtocolCheck) {
-                        accessProtocol = input.readLine();
-                        if (accessProtocol.toLowerCase().equals("public")
-                                || accessProtocol.toLowerCase().equals("private")) {
-                            accessProtocolCheck = false; // Access protocol was set succesfully to either public or
-                                                         // private, break out of while loop
-                        } else {
+                    while (!fileExists) {
+                        fileName = input.readLine();
+                        try {
+                            readFile(fileName);
+                            fileExists = true;
+                        } catch (FileNotFoundException e) {
                             System.out.println(
-                                    "Please enter a valid privacy setting for your file. Either 'private' or 'public'");
+                                    "This file does not exist. Please check that your file path is correct and \n re-enter the name of the file you want to upload:");
+
+                        } catch (Exception e) {
+                            System.out.println("There was an unexpected error. Please try again.");
                         }
                     }
-                    upload(fileName, accessProtocol);
-                    check = false;
-                } else if (request.toLowerCase().equals("download")) {
-                    System.out.println("Please enter the name of the file you want to download");
+                    // Sets the access protocol of a file to either private or public
+                    System.out.println(
+                            "Please specify the privacy setting for the file you want to upload ('public' or 'private'):");
+                    while (!accessCheck) {
+                        access = input.readLine().toLowerCase();
+                        if (access.equals("public") || access.equals("private")) {
+                            accessCheck = true; // Access was set succesfully to either public or
+                                                // private, break out of while loop
+                        } else {
+                            System.out.println(
+                                    "Please enter a valid privacy setting for your file. Either 'private' or 'public':");
+                        }
+                    }
+                    upload(fileName, access);
+                    checkValid = true;
+                    // Requests to download a file
+                } else if (request.equals("download")) {
+                    System.out.println("Please enter the name of the file you want to download:");
                     fileName = input.readLine();
                     download(fileName);
-                    check = false;
-                } else if (request.toLowerCase().equals("getlist")) {
+                    checkValid = true;
+                    // Request to retrieve a list of files
+                } else if (request.equals("getlist")) {
                     getList();
-                    check = false;
+                    checkValid = true;
+                    // Request to exit the program
+                } else if (request.equals("exit")) {
+                    handleExit();
+                    checkValid = true;
                 } else {
                     handleBadRequest();
                 }
@@ -67,41 +87,28 @@ public class Client {
              * DataOutputStream output = new DataOutputStream(client.getOutputStream());
              */
 
-            Thread receiver = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        try {
-                            ; // Communication between receiver and the server
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-
-            Thread sender = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        try {
-                            ;// Communication between sender from local and the server
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-
-            receiver.start();
-            sender.start();
+            /*
+             * Thread receiver = new Thread(new Runnable() {
+             * 
+             * @Override public void run() { while (true) { try { ; // Communication between
+             * receiver and the server } catch (Exception e) { e.printStackTrace(); } } }
+             * });
+             * 
+             * Thread sender = new Thread(new Runnable() {
+             * 
+             * @Override public void run() { while (true) { try { ;// Communication between
+             * sender from local and the server } catch (Exception e) { e.printStackTrace();
+             * } } } });
+             * 
+             * receiver.start(); sender.start();
+             */
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     // File name and access protocol (public or private) is being passed in here
-    static void upload(String fileName, String accessProtocol) {
+    static void upload(String fileName, String access) {
         ;
     }
 
@@ -115,6 +122,14 @@ public class Client {
     }
 
     static void handleBadRequest() {
-        System.out.println("Please enter a valid request \n Either 'Upload', 'Download', or 'GetList'");
+        System.out.println("Please enter a valid request \n Either 'Upload', 'Download', or 'GetList':");
+    }
+
+    static void handleExit() {
+        ;
+    }
+
+    static void readFile(String fileName) throws FileNotFoundException {
+        File file = new File(fileName);
     }
 }
