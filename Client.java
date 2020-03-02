@@ -30,10 +30,7 @@ public class Client {
             // Checks if the request is a valid request
             while (!checkValid) {
 
-                System.out.println("Got here. 1 Yay");
-
                 String request = inputSC.nextLine().toLowerCase();
-                System.out.println("This is the request: " + request);
                 String fileName = null;
                 String access = null;
                 boolean fileExists = false;
@@ -88,7 +85,7 @@ public class Client {
                 }
             }
 
-            System.out.println("Got here 2");
+            inputSC.close();
 
             /*
              * DataInputStream input = new DataInputStream(client.getInputStream());
