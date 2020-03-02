@@ -2,17 +2,21 @@ import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
 
-public class Server {
+public class Server
+{
 
     private static int port = 10000;
 
     static ArrayList<ClientHandler> handlers = new ArrayList<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         ServerSocket server = null;
-        try {
+        try
+        {
             server = new ServerSocket(port);
-            while (true) {
+            while (true)
+            {
                 // Accept the client here and create a new thread to handle the client
                 System.out.println("Listening requests from client......");
                 Socket client = server.accept();
@@ -32,7 +36,9 @@ public class Server {
 
                 System.out.println("Connection established.");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
     }

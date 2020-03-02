@@ -3,54 +3,11 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-public class ClientHandler extends Thread {
+public class ClientHandler extends Thread
+{
 
     private boolean checkValid;
     private Socket client;
-    /*
-     * private final DataInputStream input; private final DataOutputStream output;
-     */
-
-
-    
-        private static String filePath = "list.txt";
-
-        private ArrayList<ClientHandler.FileInfo> fileList = new ArrayList<>();
-
-        class FileInfo
-        {
-            String fileName;
-            String key;
-            String access;
-
-            FileInfo(String fileName, String access)
-            {
-                this.fileName = fileName;
-                this.access = access;
-                key = "";
-            }
-
-            FileInfo(String fileName, String access, String key)
-            {
-                this.fileName = fileName;
-                this.access = access;
-                this.key = key;
-            }
-
-            public String toString()
-            {
-                return fileName + " " +  access + " " + key;
-            }
-
-            public String getFileName()
-            {
-                return fileName;
-            }
-        }
-
-
-
-
 
 
     // BufferedReader and PrintWriter creations
@@ -61,18 +18,21 @@ public class ClientHandler extends Thread {
 
     private ArrayList<ClientHandler.FileInfo> fileList = new ArrayList<>();
 
-    class FileInfo {
+    class FileInfo
+    {
         String fileName;
         String key;
         String access;
 
-        FileInfo(String fileName, String access) {
+        FileInfo(String fileName, String access)
+        {
             this.fileName = fileName;
             this.access = access;
             key = "";
         }
 
-        FileInfo(String fileName, String access, String key) {
+        FileInfo(String fileName, String access, String key)
+        {
             this.fileName = fileName;
             this.access = access;
             this.key = key;
@@ -89,7 +49,8 @@ public class ClientHandler extends Thread {
 
     // New constructor utilising BufferedReader and PrintWriter
 
-    public ClientHandler(Socket client, BufferedReader input, PrintWriter output) {
+    public ClientHandler(Socket client, BufferedReader input, PrintWriter output)
+    {
         this.client = client;
         this.input = input;
         this.output = output;
@@ -101,68 +62,93 @@ public class ClientHandler extends Thread {
      * output) { this.client = client; this.input = input; this.output = output; }
      */
 
-    public void run() {
-        try {
+    public void run()
+    {
+        try
+        {
             checkValid = false;
-            while (!checkValid) {
+            while (!checkValid)
+            {
                 // Here is where the sequences gonna happen
                 String request = input.readLine();
 
-                if (request.startsWith("exit")) {
+                if (request.startsWith("exit"))
+                {
                     handleExit();
                     checkValid = true;
-                } else if (request.startsWith("upload")) {
+                }
+                else if (request.startsWith("upload"))
+                {
                     receiveFile();
                     checkValid = true;
-                } else if (request.startsWith("download")) { // Still need to implement a FileExists check
+                }
+                else if (request.startsWith("download"))
+                {
+                    // Still need to implement a FileExists check
                     sendFile();
                     checkValid = true;
-                } else if (request.startsWith("getlist")) {
+                }
+                else if (request.startsWith("getlist"))
+                {
                     sendList();
                     checkValid = true;
-                } else {
-                    handleBadRequest();
                 }
+                else
+                    handleBadRequest();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
-        try {
+
+        try
+        {
             input.close();
             output.close();
             client.close();
             Server.handlers.remove(this);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
 
-    void receiveFile() {
+
+
+    void receiveFile()
+    {
         ;
     }
 
-    void sendList() {
+    void sendList()
+    {
         ;
     }
 
-    void sendFile() {
+    void sendFile()
+    {
         ;
     }
 
-    void loadFileList() throws IOException {
+    void loadFileList() throws IOException
+    {
         File fileList = new File(filePath);
         BufferedReader input = new BufferedReader(new FileReader(fileList));
         String info;
-        while ((info = input.readLine()) != null) {
+        while ((info = input.readLine()) != null)
+        {
             StringTokenizer token = new StringTokenizer(info);
             String name = token.nextToken();
             String access = token.nextToken();
             FileInfo file;
-            if (access.compareTo("private") == 0) {
+            if (access.compareTo("private") == 0)
+            {
                 file = new FileInfo(name, access, token.nextToken());
-            } else {
-                file = new FileInfo(name, access);
             }
+            else
+                file = new FileInfo(name, access);
 
             this.fileList.add(file);
         }
@@ -171,49 +157,55 @@ public class ClientHandler extends Thread {
 
     }
 
-    String getFileList() {
+    String getFileList()
+    {
         String temp = "";
 
-        for (int i = 0; i < fileList.size(); i++) {
+        for (int i = 0; i < fileList.size(); i++)
             temp += (fileList.get(i).getFileName() + "\n");
-        }
 
         return temp;
     }
 
-    boolean fileExist(String fileName) {
-        for (int i = 0; i < fileList.size(); i++) {
-            if (fileList.get(i).getFileName().compareTo(fileName) == 0) {
+    boolean fileExist(String fileName)
+    {
+        for (int i = 0; i < fileList.size(); i++)
+        {
+            if (fileList.get(i).getFileName().compareTo(fileName) == 0)
                 return true;
-            }
         }
         return false;
     }
 
-    void addFile(String fileName, String access) throws IOException {
+    void addFile(String fileName, String access) throws IOException
+    {
         FileInfo file = new FileInfo(fileName, access);
         fileList.add(file);
         saveList(file);
     }
 
-    void addFile(String fileName, String access, String key) throws IOException {
+    void addFile(String fileName, String access, String key) throws IOException
+    {
         FileInfo file = new FileInfo(fileName, access, key);
         fileList.add(file);
         saveList(file);
     }
 
-    void saveList(FileInfo file) throws IOException {
+    void saveList(FileInfo file) throws IOException
+    {
         PrintWriter writer = new PrintWriter(new FileWriter(filePath), true);
         writer.write(file.toString());
 
         writer.close();
     }
 
-    void handleExit() {
+    void handleExit()
+    {
         System.exit(0);
     }
 
-    void handleBadRequest() {
+    void handleBadRequest()
+    {
         System.out.print("Please enter a valid request \n Either 'Upload', 'Download', or 'GetList':");
     }
 
