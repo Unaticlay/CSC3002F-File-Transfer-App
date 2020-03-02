@@ -8,6 +8,7 @@ public class Client {
     static Socket client;
 
     private static boolean check = true;
+    private static boolean accessProtocolCheck = true;
 
     public static void main(String[] args) {
         try {
@@ -28,11 +29,25 @@ public class Client {
 
                 String request = input.readLine();
                 String fileName = null;
+                String accessProtocol = null;
 
                 if (request.toLowerCase().equals("upload")) {
-                    System.out.println("Please enter the name of the file you want to upload");
+                    System.out.println("Please enter the name of the file you want to upload:");
                     fileName = input.readLine();
-                    upload(fileName);
+                    System.out.println(
+                            "Please specify the privacy setting for the file you want to upload ('public' or 'private'):");
+                    while (accessProtocolCheck) {
+                        accessProtocol = input.readLine();
+                        if (accessProtocol.toLowerCase().equals("public")
+                                || accessProtocol.toLowerCase().equals("private")) {
+                            accessProtocolCheck = false; // Access protocol was set succesfully to either public or
+                                                         // private, break out of while loop
+                        } else {
+                            System.out.println(
+                                    "Please enter a valid privacy setting for your file. Either 'private' or 'public'");
+                        }
+                    }
+                    upload(fileName, accessProtocol);
                     check = false;
                 } else if (request.toLowerCase().equals("download")) {
                     System.out.println("Please enter the name of the file you want to download");
@@ -85,9 +100,8 @@ public class Client {
         }
     }
 
-    // File name is being passed in here
-    // Needs to still ask for access setting
-    static void upload(String fileName) {
+    // File name and access protocol (public or private) is being passed in here
+    static void upload(String fileName, String accessProtocol) {
         ;
     }
 
