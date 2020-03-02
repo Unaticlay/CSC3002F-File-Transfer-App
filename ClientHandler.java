@@ -61,26 +61,30 @@ public class ClientHandler extends Thread {
      */
 
     public void run() {
-        checkValid = false;
-        while (!checkValid) {
-            // Here is where the sequences gonna happen
-            String request = input.readLine();
+        try {
+            checkValid = false;
+            while (!checkValid) {
+                // Here is where the sequences gonna happen
+                String request = input.readLine();
 
-            if (request.startsWith("exit")) {
-                handleExit();
-                checkValid = true;
-            } else if (request.startsWith("upload")) {
-                receiveFile();
-                checkValid = true;
-            } else if (request.startsWith("download")) { // Still need to implement a FileExists check
-                sendFile();
-                checkValid = true;
-            } else if (request.startsWith("getlist")) {
-                sendList();
-                checkValid = true;
-            } else {
-                handleBadRequest();
+                if (request.startsWith("exit")) {
+                    handleExit();
+                    checkValid = true;
+                } else if (request.startsWith("upload")) {
+                    receiveFile();
+                    checkValid = true;
+                } else if (request.startsWith("download")) { // Still need to implement a FileExists check
+                    sendFile();
+                    checkValid = true;
+                } else if (request.startsWith("getlist")) {
+                    sendList();
+                    checkValid = true;
+                } else {
+                    handleBadRequest();
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         try {
             input.close();

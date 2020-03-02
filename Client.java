@@ -1,9 +1,10 @@
 import java.net.*;
 import java.io.*;
+import java.util.Scanner;
 
 public class Client {
 
-    private static int port = 1000;
+    private static int port = 10000;
 
     static Socket client;
 
@@ -16,18 +17,23 @@ public class Client {
             InetAddress host = InetAddress.getLocalHost();
             client = new Socket(host.getHostAddress(), port);
 
+            Scanner inputSC = new Scanner(System.in);
+
             // BufferReader and PrintWriter for input and output streams
             BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream()));
             PrintWriter output = new PrintWriter(client.getOutputStream());
 
             System.out.println("Please specify what you would like to do:");
-            System.out.println(" Upload', 'Download', or 'GetList'");
+            System.out.println("'Upload', 'Download', or 'GetList'");
             checkValid = false;
 
             // Checks if the request is a valid request
             while (!checkValid) {
 
-                String request = input.readLine().toLowerCase();
+                System.out.println("Got here. 1 Yay");
+
+                String request = inputSC.nextLine().toLowerCase();
+                System.out.println("This is the request: " + request);
                 String fileName = null;
                 String access = null;
                 boolean fileExists = false;
@@ -36,7 +42,7 @@ public class Client {
                 if (request.equals("upload")) {
                     System.out.println("Please enter the name of the file you want to upload:");
                     while (!fileExists) {
-                        fileName = input.readLine();
+                        fileName = inputSC.nextLine();
                         try {
                             readFile(fileName);
                             fileExists = true;
@@ -52,7 +58,7 @@ public class Client {
                     System.out.println(
                             "Please specify the privacy setting for the file you want to upload ('public' or 'private'):");
                     while (!accessCheck) {
-                        access = input.readLine().toLowerCase();
+                        access = inputSC.nextLine().toLowerCase();
                         if (access.equals("public") || access.equals("private")) {
                             accessCheck = true; // Access was set succesfully to either public or
                                                 // private, break out of while loop
@@ -66,7 +72,7 @@ public class Client {
                     // Requests to download a file
                 } else if (request.equals("download")) {
                     System.out.println("Please enter the name of the file you want to download:");
-                    fileName = input.readLine();
+                    fileName = inputSC.nextLine();
                     download(fileName);
                     checkValid = true;
                     // Request to retrieve a list of files
@@ -81,6 +87,8 @@ public class Client {
                     handleBadRequest();
                 }
             }
+
+            System.out.println("Got here 2");
 
             /*
              * DataInputStream input = new DataInputStream(client.getInputStream());
