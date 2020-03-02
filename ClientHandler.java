@@ -11,8 +11,49 @@ public class ClientHandler extends Thread {
      * private final DataInputStream input; private final DataOutputStream output;
      */
 
-    // BufferedReader and PrintWriter creations
 
+    
+        private static String filePath = "list.txt";
+
+        private ArrayList<ClientHandler.FileInfo> fileList = new ArrayList<>();
+
+        class FileInfo
+        {
+            String fileName;
+            String key;
+            String access;
+
+            FileInfo(String fileName, String access)
+            {
+                this.fileName = fileName;
+                this.access = access;
+                key = "";
+            }
+
+            FileInfo(String fileName, String access, String key)
+            {
+                this.fileName = fileName;
+                this.access = access;
+                this.key = key;
+            }
+
+            public String toString()
+            {
+                return fileName + " " +  access + " " + key;
+            }
+
+            public String getFileName()
+            {
+                return fileName;
+            }
+        }
+
+
+
+
+
+
+    // BufferedReader and PrintWriter creations
     private final BufferedReader input;
     private final PrintWriter output;
 
@@ -146,7 +187,6 @@ public class ClientHandler extends Thread {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -176,4 +216,6 @@ public class ClientHandler extends Thread {
     void handleBadRequest() {
         System.out.print("Please enter a valid request \n Either 'Upload', 'Download', or 'GetList':");
     }
+
+
 }
