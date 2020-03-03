@@ -39,7 +39,7 @@ public class ClientHandler extends Thread
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            System.out.println("Client exceptional exited.");
         }
         finally
         {
@@ -55,17 +55,6 @@ public class ClientHandler extends Thread
             Server.handlers.remove(this);
         }
 
-        try
-        {
-            input.close();
-            output.close();
-            client.close();
-            Server.handlers.remove(this);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
     }
 
 
