@@ -8,219 +8,198 @@ public class Client
     private static int port = 10000;
 
     static Socket client;
-    static String dest = "C:\\Users\\Laaiqah\\Desktop\\CSC3 NETWORKS\\Client\\";
-
-
-    private static boolean checkValid = false;
-    private static boolean accessCheck = false;
 
     public static void main(String[] args)
     {
         try
         {
-            // Here need to build the connection and GUI, also where everything is happening
             InetAddress host = InetAddress.getLocalHost();
             client = new Socket(host.getHostAddress(), port);
 
-            Scanner inputSC = new Scanner(System.in);
+            Scanner keyboard = new Scanner(System.in);
 
-            // BufferReader and PrintWriter for input and output streams
-            BufferedReader input = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            PrintWriter output = new PrintWriter(client.getOutputStream());
+            DataInputStream input = new DataInputStream(client.getInputStream());
+            DataOutputStream output = new DataOutputStream(client.getOutputStream());
 
-            System.out.println("Please specify what you would like to do:");
-            System.out.println("'Upload', 'Download', or 'GetList'");
-            checkValid = false;
+            String operation = null;
 
-            // Checks if the request is a valid request
-            while (!checkValid)
+            while (true)
             {
+                System.out.println("Please specify what you would like to do:");
+                System.out.println("'Upload', 'Download', 'GetList' or 'Quit'");
+                operation = keyboard.nextLine();
+                operation = operation.toUpperCase();
 
-                String request = inputSC.nextLine().toLowerCase();
-                String fileName = null;
-                String access = null;
-                boolean fileExists = false;
-
-                // Handles the uploading of a file and catches FileNotFoundException
-                if (request.equals("upload"))
+                if ((operation.compareTo("UPLOAD") == 0) || (operation.compareTo("DOWNLOAD") == 0) || (operation.compareTo("GETLIST") == 0) || (operation.compareTo("QUIT") == 0))
                 {
-                    System.out.println("Please enter the name of the file you want to upload:");
-                    while (!fileExists)
+                    if (operation.compareTo("QUIT") == 0)
                     {
-                        fileName = inputSC.nextLine();
-                        try
-                        {
-                            readFile(fileName);
-                            fileExists = true;
-                        }
-                        catch (FileNotFoundException e)
-                        {
-                            System.out.println("This file does not exist. Please check that your file path is correct and \n re-enter the name of the file you want to upload:");
-                        }
-                        catch (Exception e)
-                        {
-                            System.out.println("There was an unexpected error. Please try again.");
-                        }
-                    }
-                    // Sets the access protocol of a file to either private or public
-                    System.out.println("Please specify the privacy setting for the file you want to upload ('public' or 'private'):");
-
-                    while (!accessCheck)
-                    {
-                        access = inputSC.nextLine().toLowerCase();
-                        if (access.equals("public") || access.equals("private"))
-                            accessCheck = true; // Access was set succesfully to either public or private, break out of while loop
-                        else
-                            System.out.println("Please enter a valid privacy setting for your file. Either 'private' or 'public':");
+                        output.writeUTF(operation);
+                        input.close();
+                        output.close();
+                        break;
                     }
 
-                    upload(fileName, access);
-                    checkValid = true;
-                    // Requests to download a file
-                }
-                else if (request.equals("download"))
-                {
-                    System.out.println("Please enter the name of the file you want to download:");
-                    fileName = inputSC.nextLine();
-                    download(fileName);
-                    checkValid = true;
-                    // Request to retrieve a list of files
-                }
-                else if (request.equals("getlist"))
-                {
-                    getList();
-                    checkValid = true;
-                    // Request to exit the program
-                }
-                else if (request.equals("exit"))
-                {
-                    handleExit();
-                    checkValid = true;
+                    output.writeUTF(operation); // Send the command to the client
+
+                    if (operation.compareTo("UPLOAD") == 0)
+                        upload(input, output, keyboard);
+                    else if (operation.compareTo("DOWNLOAD") == 0)
+                        download(input, output, keyboard);
+                    else
+                        getList(input);
                 }
                 else
-                    handleBadRequest();
+                    System.out.println("Please type in a valid command.");
             }
-
-            inputSC.close();
-
-            /*
-             * DataInputStream input = new DataInputStream(client.getInputStream());
-             * DataOutputStream output = new DataOutputStream(client.getOutputStream());
-             */
-
-            /*
-             * Thread receiver = new Thread(new Runnable() {
-             * 
-             * @Override public void run() { while (true) { try { ; // Communication between
-             * receiver and the server } catch (Exception e) { e.printStackTrace(); } } }
-             * });
-             * 
-             * Thread sender = new Thread(new Runnable() {
-             * 
-             * @Override public void run() { while (true) { try { ;// Communication between
-             * sender from local and the server } catch (Exception e) { e.printStackTrace();
-             * } } } });
-             * 
-             * receiver.start(); sender.start();
-             */
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
+        finally
+        {
+            try
+            {
+                client.close();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 
-    // File name and access protocol (public or private) is being passed in here
-    static void upload(String fileName, String access)
+
+    static void upload(DataInputStream input, DataOutputStream output, Scanner keyboard) throws IOException
     {
-         File file = new File(fileName);
-         byte[] bytes = new byte[16384];          
-         try{
-               FileInputStream filein = new FileInputStream(file);
-               DataInputStream input = new DataInputStream(filein);          
-               try{  
-                     input.readFully(bytes, 0, bytes.length);
-                     OutputStream clientStream = client.getOutputStream();
-                     DataOutputStream output = new DataOutputStream(clientStream);
-                           
-                /*           byte[] buffer = new byte[BUFFER_SIZE];
-                           int read;
-                           int totalRead = 0;
-                           long size = input.readLong();
-                           System.out.println("Reading to server.");
-            
-                                while ((read = input.read(buffer)) != -1) {
-                                    totalRead += read;
-                                    output.write(buffer, 0, read);
-                                }
-                                              
-                            System.out.println("File successfully sent to server.");
-                            output.flush();
-                            System.out.println("Transfer Complete");
-                            clientStream.close();
-                          
-                            client.close();
-            */
-                     output.writeUTF(file.getName());
-                     output.writeLong(bytes.length);
-                     output.write(bytes, 0, bytes.length);
-                     
-                     System.out.println("File successfully uploaded onto server.");
-                     output.flush();
-                     System.out.println("Transfer Complete");
-            
-                     clientStream.close();
-                     client.close();
-                 }catch(IOException e) {
-                      e.printStackTrace();
-                  }
-            }catch (FileNotFoundException ex)  
-    {
-            System.out.println(ex);
-    }
+        boolean fileExist = false;
+        String fileName = null;
+        File file = null;
+
+        while (!fileExist)
+        {
+            System.out.println("Please enter the file name you want to upload: ");
+            fileName = keyboard.nextLine();
+
+            file = new File(fileName);
+            if (file.exists())
+            {
+                output.writeUTF(fileName);
+                String exist = input.readUTF();
+                if (exist.compareTo("EXIST") == 0)
+                    System.out.println("A file with the same name is already on the server, please check if it is the same file, otherwise change the file's name");
+                else
+                    fileExist = true;
+            }
+            else
+                System.out.println("File cannot be opened. Please type a valid file name.");
+        }
+
+        String access = null;
+        String key = "";
+
+        boolean valid = false;
+        while (!valid)
+        {
+            System.out.println("Do you want it to be 'public' or 'private'");
+            access = keyboard.nextLine();
+            access = access.toUpperCase();
+            if ((access.compareTo("PUBLIC") == 0) || (access.compareTo("PRIVATE") == 0))
+            {
+                valid = true;
+                if (access.compareTo("PRIVATE") == 0)
+                {
+                    System.out.println("Please type in a key that other users can used to access and download the file.");
+                    key = keyboard.nextLine();
+                }
+            }
+            else
+                System.out.println("Please type in a valid access level, 'public' or 'private'.");
+        }
+
+        FileInputStream fi = new FileInputStream(file);
+
+        byte[] buffer = new byte[8192];
+        long length = file.length();
+
+        output.writeUTF(access);
+        output.writeUTF(key);
+        output.writeLong(length);
+        output.flush();
+
+        int count;
+        while ((count = fi.read(buffer)) > 0)
+            output.write(buffer, 0, count);
+
+        fi.close();
+
+        System.out.println("Upload file succeed. \n");
+
     }
 
-    // File name is being passed in here
-    static void download(String fileName)
+
+    static void download(DataInputStream input, DataOutputStream output, Scanner keyboard) throws IOException
     {
-        int bytesRead;
-        try{
-           DataInputStream in = new DataInputStream(client.getInputStream());   
-           String file = fileName;     
-           OutputStream output = new FileOutputStream(dest+file);     
-           long size = in.readLong();     
-           byte[] buffer = new byte[16384]; 
-           System.out.println("Downloading");
-          
-           while (size > 0 && (bytesRead = in.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1)     
-          //  while ((bytesRead = in.read(buffer, 0, (int)Math.min(buffer.length, size))) >0)     
-           {     
-               output.write(buffer, 0, bytesRead);     
-               size -= bytesRead;     
-           }  
-           
-           System.out.println("Download successful.");
-         } catch (IOException ie) { 
-                       ie.printStackTrace(); 
-                     }
+        String fileName = "";
+        boolean exist = false;
+
+        while (!exist)
+        {
+            System.out.println("Please enter the filename you want to download:");
+
+            fileName = keyboard.nextLine();
+
+            output.writeUTF(fileName);
+
+            String existance = input.readUTF();
+            if (existance.compareTo("EXIST") == 0)
+                exist = true;
+            else if (existance.compareTo("KEY") == 0)
+            {
+                boolean correct = false;
+                exist = true;
+
+                while (!correct)
+                {
+                    System.out.println("Please enter the key for this file: ");
+                    String key = keyboard.nextLine();
+                    output.writeUTF(key);
+
+                    String temp = input.readUTF();
+                    if (temp.compareTo("CORRECT") == 0)
+                        correct = true;
+                    else
+                        System.out.println("The key you just entered to download the key was incorrect.");
+                }
+            }
+            else
+                System.out.println("The file you requested does not exist on the server.");
+        }
+
+        FileOutputStream fos = new FileOutputStream("Client_" + fileName);
+        long length = input.readLong();
+
+        byte[] buffer = new byte[8192];
+        int read = 0;
+        while ((read = input.read(buffer, 0, (int)Math.min(buffer.length, length))) > 0)
+        {
+            length -= read;
+            fos.write(buffer, 0, read);
+        }
+
+        fos.close();
+
+        System.out.println("Download file succeed. \n");
+
     }
 
-    static void getList()
+    static void getList(DataInputStream input) throws IOException
     {
-        ;
-    }
-
-    static void handleBadRequest()
-    {
-        System.out.println("Please enter a valid request \n Either 'Upload', 'Download', or 'GetList':");
-    }
-
-    static void handleExit()
-    {
-        System.exit(0);
-    }
-
-    static void readFile(String fileName) throws FileNotFoundException {
-        File file = new File(fileName);
+        String list = input.readUTF();
+        if (list.compareTo("") == 0)
+            System.out.println("Currently there is no file on the server.");
+        else
+            System.out.println("The list is as following: \n" + list);
     }
 }
