@@ -91,7 +91,7 @@ public class ClientHandler extends Thread
         String access = input.readUTF();
         String key = input.readUTF();
 
-        FileOutputStream fos = new FileOutputStream("Server_" + fileName);
+        FileOutputStream fos = new FileOutputStream(fileName);
         long length = input.readLong();
 
         byte[] buffer = new byte[8192];
@@ -104,7 +104,7 @@ public class ClientHandler extends Thread
 
         fos.close();
 
-        Server.addFile("Server_" + fileName, access, key);
+        Server.addFile(fileName, access, key);
 
     }
 

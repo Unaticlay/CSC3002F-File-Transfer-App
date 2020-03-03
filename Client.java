@@ -177,7 +177,7 @@ public class Client
                 System.out.println("The file you requested does not exist on the server.");
         }
 
-        FileOutputStream fos = new FileOutputStream("Client_" + fileName);
+        FileOutputStream fos = new FileOutputStream(fileName);
         long length = input.readLong();
 
         byte[] buffer = new byte[8192];
