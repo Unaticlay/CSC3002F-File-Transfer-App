@@ -20,6 +20,7 @@ public class ClientHandler extends Thread
     {
         try
         {
+            // Check for different operations
             boolean exit = false;
             while (!exit)
             {
@@ -46,7 +47,7 @@ public class ClientHandler extends Thread
             try {
                 input.close();
                 output.close();
-                client.close();
+                client.close(); // Make sure the program end properly
             }
             catch (Exception e)
             {
@@ -58,11 +59,16 @@ public class ClientHandler extends Thread
     }
 
 
-
+    /** Receive the file when the client uploads it
+     *
+     * @param input
+     * @throws IOException
+     */
     void receiveFile(DataInputStream input) throws IOException
     {
         String fileName;
         boolean exist;
+        // Check if the file exists on the server side, if true, then tell the client it already exists on the server, and ask for another file
         while (true)
         {
             fileName = input.readUTF();
@@ -77,6 +83,7 @@ public class ClientHandler extends Thread
             }
         }
 
+        // Write the data to the file and save
         String access = input.readUTF();
         String key = input.readUTF();
 
@@ -90,18 +97,29 @@ public class ClientHandler extends Thread
             length -= read;
             fos.write(buffer, 0, read);
         }
-
         fos.close();
 
+        // Add the file to the fileList, and update it accordingly
         Server.addFile(fileName, access, key);
 
     }
 
+    /** Send the file list to the client
+     *
+     * @param output
+     * @throws IOException
+     */
     void sendList(DataOutputStream output) throws IOException
     {
         output.writeUTF(Server.getFileList());
     }
 
+    /** When user requests a download, it sends the file to the user
+     *
+     * @param input
+     * @param output
+     * @throws IOException
+     */
     void sendFile(DataInputStream input, DataOutputStream output) throws IOException
     {
         boolean exist = false;
@@ -111,12 +129,14 @@ public class ClientHandler extends Thread
         while (!exist)
         {
             fileName = input.readUTF();
-            if (Server.fileExist(fileName) == true)
+            // Check if the file exists at the server side
+            if (Server.fileExist(fileName))
             {
-                if (Server.isPublic(fileName) == true)
+                if (Server.isPublic(fileName))
                     output.writeUTF("EXIST");
                 else
                 {
+                    // If the file requires a key, ask for the key until it is correct
                     output.writeUTF("KEY");
                     boolean correct = false;
 
@@ -136,6 +156,7 @@ public class ClientHandler extends Thread
                 output.writeUTF("NOTEXIST");
         }
 
+        // Send the file to the client
         File file = new File(fileName);
         FileInputStream fi = new FileInputStream(file);
 

@@ -35,7 +35,7 @@ public class Server
 
                 ClientHandler ch = new ClientHandler(client, input, output);
 
-                handlers.add(ch);
+                handlers.add(ch); // Add the client handler to the list so the Server can listen to another request from clients
                 ch.start();
 
                 System.out.println("Connection established.");
@@ -47,7 +47,9 @@ public class Server
         }
     }
 
-
+    /** Load the file list from the file
+     *
+     */
     static void loadFileList()
     {
         try
@@ -56,7 +58,7 @@ public class Server
             BufferedReader input = new BufferedReader(new FileReader(fileList));
             String info;
             while ((info = input.readLine()) != null) {
-                StringTokenizer token = new StringTokenizer(info);
+                StringTokenizer token = new StringTokenizer(info); // Seperate the data from each other, and check it one by one
                 String name = token.nextToken();
                 String access = token.nextToken();
                 FileInfo file;
@@ -77,6 +79,10 @@ public class Server
 
     }
 
+    /** Return the file list as a string
+     *
+     * @return file list
+     */
     static String getFileList()
     {
         String temp = "";
@@ -87,6 +93,11 @@ public class Server
         return temp;
     }
 
+    /** Check whether a file with the filename exists
+     *
+     * @param fileName
+     * @return fileExist
+     */
     static boolean fileExist(String fileName)
     {
         for (int i = 0; i < fileList.size(); i++)
@@ -97,6 +108,13 @@ public class Server
         return false;
     }
 
+    /** Add file to the file list and update the local file list database
+     *
+     * @param fileName
+     * @param access
+     * @param key
+     * @throws IOException
+     */
     static void addFile(String fileName, String access, String key) throws IOException
     {
         FileInfo file;
@@ -110,6 +128,11 @@ public class Server
         saveList(file);
     }
 
+    /** Save the file to the list locally
+     *
+     * @param file
+     * @throws IOException
+     */
     static void saveList(FileInfo file) throws IOException
     {
         PrintWriter writer = new PrintWriter(new FileWriter(Server.filePath), true);
@@ -118,6 +141,11 @@ public class Server
         writer.close();
     }
 
+    /** Check whether a file is public or private
+     *
+     * @param fileName
+     * @return access
+     */
     static boolean isPublic(String fileName)
     {
         for (int i = 0; i < fileList.size(); i++)
@@ -128,6 +156,12 @@ public class Server
         return false;
     }
 
+    /** To check whther the key is correct for the certain file
+     *  to retrieve the file
+     * @param fileName
+     * @param key
+     * @return Key is correct or not
+     */
     static boolean keyCorrect(String fileName, String key)
     {
         for (int i = 0; i < fileList.size(); i++)

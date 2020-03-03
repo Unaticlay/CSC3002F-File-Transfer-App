@@ -30,11 +30,11 @@ public class Client
                 operation = keyboard.nextLine();
                 operation = operation.toUpperCase();
 
-                if ((operation.compareTo("UPLOAD") == 0) || (operation.compareTo("DOWNLOAD") == 0) || (operation.compareTo("GETLIST") == 0) || (operation.compareTo("QUIT") == 0))
+                if ((operation.compareTo("UPLOAD") == 0) || (operation.compareTo("DOWNLOAD") == 0) || (operation.compareTo("GETLIST") == 0) || (operation.compareTo("QUIT") == 0)) // To check whether the input is valid or not
                 {
                     if (operation.compareTo("QUIT") == 0)
                     {
-                        output.writeUTF(operation);
+                        output.writeUTF(operation); // To end program properly
                         input.close();
                         output.close();
                         break;
@@ -42,6 +42,7 @@ public class Client
 
                     output.writeUTF(operation); // Send the command to the client
 
+                    // Deal with different commands separately
                     if (operation.compareTo("UPLOAD") == 0)
                         upload(input, output, keyboard);
                     else if (operation.compareTo("DOWNLOAD") == 0)
@@ -61,7 +62,7 @@ public class Client
         {
             try
             {
-                client.close();
+                client.close(); // Make sure the socket is closed properly
             }
             catch (Exception e)
             {
@@ -70,7 +71,13 @@ public class Client
         }
     }
 
-
+    /** Client upload a file to the server
+     *
+     * @param input
+     * @param output
+     * @param keyboard
+     * @throws IOException
+     */
     static void upload(DataInputStream input, DataOutputStream output, Scanner keyboard) throws IOException
     {
         boolean fileExist = false;
@@ -83,6 +90,7 @@ public class Client
             fileName = keyboard.nextLine();
 
             file = new File(fileName);
+            // Check if the file exists locally or not, if not, re-prompt the client(user)
             if (file.exists())
             {
                 output.writeUTF(fileName);
@@ -100,6 +108,7 @@ public class Client
         String key = "";
 
         boolean valid = false;
+        // To make sure the access specifier is correct
         while (!valid)
         {
             System.out.println("Do you want it to be 'public' or 'private'");
@@ -118,6 +127,7 @@ public class Client
                 System.out.println("Please type in a valid access level, 'public' or 'private'.");
         }
 
+        // Uploading the file to the stream
         FileInputStream fi = new FileInputStream(file);
 
         byte[] buffer = new byte[8192];
@@ -138,7 +148,13 @@ public class Client
 
     }
 
-
+    /** Download the file from the server
+     *
+     * @param input
+     * @param output
+     * @param keyboard
+     * @throws IOException
+     */
     static void download(DataInputStream input, DataOutputStream output, Scanner keyboard) throws IOException
     {
         String fileName = "";
@@ -146,20 +162,20 @@ public class Client
 
         while (!exist)
         {
+            // Make sure that the file that the user requested exist on the server
             System.out.println("Please enter the filename you want to download:");
-
             fileName = keyboard.nextLine();
-
             output.writeUTF(fileName);
 
-            String existance = input.readUTF();
-            if (existance.compareTo("EXIST") == 0)
+            String existence = input.readUTF();
+            if (existence.compareTo("EXIST") == 0)
                 exist = true;
-            else if (existance.compareTo("KEY") == 0)
+            else if (existence.compareTo("KEY") == 0) // If the file is private, then ask the client for the key
             {
                 boolean correct = false;
                 exist = true;
 
+                // If the key is incorrect, keep asking the user for the key
                 while (!correct)
                 {
                     System.out.println("Please enter the key for this file: ");
@@ -177,6 +193,7 @@ public class Client
                 System.out.println("The file you requested does not exist on the server.");
         }
 
+        // Download the file from the server
         FileOutputStream fos = new FileOutputStream(fileName);
         long length = input.readLong();
 
@@ -194,6 +211,11 @@ public class Client
 
     }
 
+    /** Get the list from the server and print it out if there are files
+     *
+     * @param input
+     * @throws IOException
+     */
     static void getList(DataInputStream input) throws IOException
     {
         String list = input.readUTF();
